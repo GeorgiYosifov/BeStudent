@@ -1,0 +1,58 @@
+﻿@model BeStudent.Web.ViewModels.Exam.QuestionCreateInputModel
+@{
+    this.ViewData["Title"] = "Create Question";
+}
+
+<div class="container">
+    <h1 class="mb-2 text-center">@this.ViewData["Title"]</h1>
+
+    <form method="post" asp-action="CreateQuestion" enctype="multipart/form-data">
+        <div class="form-group">
+            <label asp-for="Condition"></label>
+            <input asp-for="Condition" class="form-control" />
+            <span asp-validation-for="Condition" class="text-danger"></span>
+        </div>
+        <div class="form-group">
+            <label asp-for="Image"></label>
+            <input type="file" class="form-control-file" asp-for="Image">
+        </div>
+        <br />
+        <div class="form-group">
+            <label asp-for="Type"></label>
+            <select id="dropDownId" asp-for="Type" asp-items="Model.AnswerTypes"></select>
+            <span asp-validation-for="Type" class="text-danger"></span>
+        </div>
+        <div id="numberOfAnswers" class="form-group">
+            <label asp-for="NumberOfAnswers"></label>
+            <input asp-for="NumberOfAnswers" min="1" class="form-control" required />
+            <span asp-validation-for="NumberOfAnswers" class="text-danger"></span>
+        </div>
+
+        <input id="CreateAnswers" type="submit" class="btn btn-primary" value="Create answers" />
+        <input id="CreateNewQuestion" type="submit" class="btn btn-primary" value="Create new question" />
+    </form>
+</div>
+
+@section Scripts {
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script>
+        $(document).ready(function () {
+            $('#numberOfAnswers').show();
+            $('#CreateAnswers').show();
+            $('#CreateNewQuestion').hide();
+            $('#dropDownId').on('change', function () {
+                let value = $('#dropDownId').val();
+                if (value == "RadioButtons") {
+                    $('#numberOfAnswers').show();
+                    $('#CreateAnswers').show();
+                    $('#CreateNewQuestion').hide();
+                }
+                else {
+                    $('#numberOfAnswers').hide();
+                    $('#CreateAnswers').hide();
+                    $('#CreateNewQuestion').show();
+                }
+            });
+        });
+    </script>
+}

@@ -1,0 +1,23 @@
+﻿@model BeStudent.Web.ViewModels.Grade.GradeSetInputModel
+@{
+    this.ViewData["Title"] = "Set Grade";
+}
+
+<div class="container">
+    <h1 class="mb-2">@this.ViewData["Title"]</h1>
+
+    <form method="post" asp-action="SetGrade" asp-route-subjectName="@Model.SubjectName" asp-route-examId="@Model.ExamId" asp-route-studentId="@Model.StudentId" asp-route-sendFileId="@Model.SendFileId">
+        <div class="form-group">
+            <label asp-for="Mark"></label>
+            <input asp-for="Mark" class="form-control" />
+            <span asp-validation-for="Mark" class="text-danger"></span>
+        </div>
+        <div class="form-group">
+            <label asp-for="Description"></label>
+            <input asp-for="Description" class="form-control" />
+            <span asp-validation-for="Description" class="text-danger"></span>
+        </div>
+        <br />
+        <input type="submit" class="btn btn-primary" />
+    </form>
+</div>

@@ -1,0 +1,202 @@
+﻿@using BeStudent.Web.ViewModels.Calendar;
+@model CalendarViewModel;
+
+@{
+    this.ViewData["Title"] = $"{Model.Name}";
+
+    var year = 2020;
+    var startingDay = 3;
+    var days = 31;
+    var months = new string[] { "January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December" };
+    var monthIndex = int.Parse(Context.Request.Query["month"]);
+    var month = months[monthIndex - 1];
+    var nextMonth = monthIndex + 1;
+    var prevMonth = monthIndex - 1;
+
+    for (int i = 0; i < monthIndex - 1; i++)
+    {
+        var currMonth = months[i];
+        if (i > 6)
+        {
+            if (i % 2 != 0) days = 31;
+            else days = 30;
+        }
+        else if (currMonth == "February")
+        {
+            if (year % 4 == 0) days = 29;
+            else days = 28;
+        }
+        else
+        {
+            if (i % 2 == 0) days = 31;
+            else days = 30;
+        }
+
+        switch (days)
+        {
+            case 29:
+                startingDay++;
+                break;
+            case 30:
+                startingDay += 2;
+                break;
+            case 31:
+                startingDay += 3;
+                break;
+        }
+
+        if (startingDay > 7)
+        {
+            startingDay %= 7;
+        }
+    }
+    if ((monthIndex - 1) > 6)
+    {
+        if ((monthIndex - 1) % 2 != 0) days = 31;
+        else days = 30;
+    }
+    else if (month == "February")
+    {
+        if (year % 4 == 0) days = 29;
+        else days = 28;
+    }
+    else
+    {
+        if ((monthIndex - 1) % 2 == 0) days = 31;
+        else days = 30;
+    }
+}
+
+<head>
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <link rel="stylesheet" type="text/css" href="~/css/calendar.css">
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
+</head>
+
+<div class="container py-5">
+    <header class="text-center text-white mb-5">
+        <h1 class="display-4">Calendar of @Model.Name</h1>
+    </header>
+
+    <nav aria-label="Months">
+        <ul class="pagination pagination-lg">
+            @if (monthIndex == 1)
+            {
+                <li class="page-item disabled">
+                    <a class="page-link" asp-action="Calendar" asp-route-subjectName="@Model.Name" asp-route-month="@prevMonth">previous</a>
+                </li>
+            }
+            else
+            {
+                <li class="page-item">
+                    <a class="page-link" asp-action="Calendar" asp-route-subjectName="@Model.Name" asp-route-month="@prevMonth">previous</a>
+                </li>
+            }
+            <li class="page-item active">
+                <a class="page-link">@month</a>
+            </li>
+            @if (monthIndex == 12)
+            {
+                <li class="page-item disabled">
+                    <a class="page-link" asp-action="Calendar" asp-route-subjectName="@Model.Name" asp-route-month="@nextMonth">next</a>
+                </li>
+            }
+            else
+            {
+                <li class="page-item ">
+                    <a class="page-link" asp-action="Calendar" asp-route-subjectName="@Model.Name" asp-route-month="@nextMonth">next</a>
+                </li>
+            }
+        </ul>
+    </nav>
+
+    <!-- Calendar -->
+    <div class="calendar shadow bg-white p-5">
+        @{
+            <div class="d-flex align-items-center">
+                <i class="fa fa-calendar fa-3x mr-3"></i>
+                <h2 class="month font-weight-bold mb-0 text-uppercase">@($"{month} {year}")</h2>
+            </div>
+
+            <ol class="day-names list-unstyled">
+                <li class="font-weight-bold text-uppercase">Mon</li>
+                <li class="font-weight-bold text-uppercase">Tue</li>
+                <li class="font-weight-bold text-uppercase">Wed</li>
+                <li class="font-weight-bold text-uppercase">Thu</li>
+                <li class="font-weight-bold text-uppercase">Fri</li>
+                <li class="font-weight-bold text-uppercase">Sat</li>
+                <li class="font-weight-bold text-uppercase">Sun</li>
+            </ol>
+
+            <ol class="days list-unstyled">
+                @for (int i = 1; i < startingDay; i++)
+                {
+                    <li>
+                        <div class="date"></div>
+                    </li>
+                }
+
+                @for (int d = 1; d <= days; d++)
+                {
+                    <li>
+                        <div class="date">@d</div>
+                        @foreach (var homework in Model.Homeworks)
+                        {
+                            var diff = Math.Abs(homework.DeadLine.Day - homework.CreatedOn.Day - 1);
+                            var width = diff * 100 + 100;
+                            var content = $"Closing time in {homework.DeadLine.Hour}:{homework.DeadLine.Minute}";
+                            if (d == homework.CreatedOn.Day && d == homework.DeadLine.Day)
+                            {
+                                <div class="event bg-warning" data-toggle="popover" title="Homework" data-content="@content">
+                                    @homework.Title
+                                </div>
+                            }
+                            else if (d == homework.CreatedOn.Day)
+                            {
+                                <div style='width: @(width)%' class="event all-day begin bg-secondary" data-toggle="popover" title="Homework" data-content="@content">
+                                    @homework.Title
+                                </div>
+                            }
+                            else if (d == homework.DeadLine.Day)
+                            {
+                                <div class="event all-day end bg-secondary" data-toggle="popover" title="Homework" data-content="@content"></div>
+                            }
+                        }
+                        @foreach (var exam in Model.Exams)
+                        {
+                            foreach (var test in exam.OnlineTests)
+                            {
+                                var diff = Math.Abs(test.EndTime.Day - test.StartTime.Day - 1);
+                                var width = diff * 100 + 100;
+                                var content = $"{test.StartTime.Hour}:{test.StartTime.Minute} - {test.EndTime.Hour}:{test.EndTime.Minute}";
+                                if (d == test.StartTime.Day && d == test.EndTime.Day)
+                                {
+                                    <div class="event bg-warning" data-toggle="popover" title="Exam" data-content="@content">@exam.Title</div>
+                                }
+                                else if (d == test.StartTime.Day)
+                                {
+                                    <div style='width: @(width)%' class="event all-day begin bg-warning" data-toggle="popover" title="Exam" data-content="@content">
+                                        @exam.Title
+                                    </div>
+                                }
+                                else if (d == test.EndTime.Day)
+                                {
+                                    <div class="event all-day end bg-warning" data-toggle="popover" title="Exam" data-content="@content"></div>
+                                }
+                            }
+
+                        }
+                    </li>
+                }
+            </ol>
+            <script>
+                $(document).ready(function () {
+                    $('[data-toggle="popover"]').popover({
+                        trigger: 'hover',
+                        placement: 'bottom'
+                    });
+                });
+            </script>
+        }
+    </div>
+</div>
